@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mod Bug Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Minecraft-style 8-bit Font -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'VT323', monospace;
+            /* Classic Minecraft dirt background from options menu */
+            background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.16.5/assets/minecraft/textures/gui/options_background.png');
+            background-repeat: repeat;
+            background-size: 64px;
+            image-rendering: pixelated; /* Keeps it sharp and blocky */
+        }
+        
+        /* Minecraft Scrollbar */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #000; border-left: 2px solid #555; }
+        ::-webkit-scrollbar-thumb { background: #8b8b8b; border: 2px solid #555; border-top-color: #fff; border-left-color: #fff; }
+
+        /* Text Shadows */
+        .mc-text-shadow { text-shadow: 2px 2px 0px #3f3f3f; }
+        .mc-text-shadow-dark { text-shadow: 2px 2px 0px #000000; }
+        .mc-title { text-shadow: 4px 4px 0px #3f3f3f; }
+
+        /* Main Menu Dark Panel */
+        .mc-panel {
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #000;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Black input fields with gray borders */
+        .mc-input {
+            background-color: #000000;
+            color: #ffffff;
+            border: 2px solid #a0a0a0;
+            padding: 8px 12px;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.1s;
+        }
+        .mc-input:focus {
+            border-color: #ffffff;
+        }
+        .mc-input::placeholder {
+            color: #555555;
+        }
+
+        /* Classic Stone Buttons */
+        .mc-button {
+            background-color: #c6c6c6;
+            border: 2px solid #000;
+            /* Top/Left white, Bottom/Right dark gray for 3D effect */
+            box-shadow: inset 3px 3px 0px #ffffff, inset -3px -3px 0px #555555;
+            color: #ffffff;
+            text-shadow: 2px 2px 0px #3f3f3f;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        .mc-button:hover {
+            color: #ffff55; /* Minecraft Yellow */
+        }
+        .mc-button:active {
+            box-shadow: inset 3px 3px 0px #555555, inset -3px -3px 0px #ffffff;
+            padding-top: 14px;
+            padding-bottom: 6px;
+        }
+        .mc-button:disabled {
+            color: #a0a0a0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Inventory Slot Style for file upload */
+        .mc-slot {
+            background-color: #8b8b8b;
+            border: 2px solid #000;
+            box-shadow: inset 3px 3px 0px #373737, inset -3px -3px 0px #ffffff;
+            cursor: pointer;
+        }
+        .mc-slot:hover {
+            background-color: #9b9b9b;
+        }
+
+        /* Error box style */
+        .mc-error {
+            background-color: rgba(170, 0, 0, 0.8);
+            border: 2px solid #ff5555;
+            color: #ffffff;
+        }
+
+        /* Success box style */
+        .mc-success {
+            background-color: rgba(0, 170, 0, 0.8);
+            border: 2px solid #55ff55;
+            color: #ffffff;
+        }
+
+        select option {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col justify-center items-center p-4 selection:bg-[#ffff55] selection:text-black">
+
+    <div class="max-w-2xl w-full mc-panel p-6 md:p-10 relative">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 border-b-4 border-gray-700/50 pb-6">
+            <h1 class="text-5xl md:text-6xl text-[#ffff55] mc-title mb-2">Report a Bug</h1>
+            <p class="text-2xl text-gray-300 mc-text-shadow-dark">Help us improve the mod!</p>
+        </div>
+
+        <!-- Success Message Container (Hidden by default) -->
+        <div id="successMessage" class="hidden text-center py-8">
+            <div class="mc-success p-6 mb-8 text-2xl mc-text-shadow-dark">
+                BUG REPORT SUBMITTED SUCCESSFULLY!
+            </div>
+            <p class="text-xl text-gray-300 mc-text-shadow-dark mb-8">Thank you for helping us out. The server admins will look into it.</p>
+            <button onclick="resetForm()" class="mc-button py-3 text-2xl">
+                Submit Another Report
+            </button>
+        </div>
+
+        <!-- Form Section -->
+        <div id="formContainer">
+            <form id="bugForm" enctype="multipart/form-data" class="space-y-6">
+                
+                <!-- Anti-Spam Honeypot -->
+                <input type="text" name="_honey" style="display:none">
+                <!-- Subject line for your email -->
+                <input type="hidden" name="_subject" value="New Mod Bug Report!">
+                
+                <!-- Two Column Layout for user info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">In-Game Name <span class="text-gray-500">(Optional)</span></label>
+                        <input type="text" name="Username" placeholder="Steve" class="mc-input text-2xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Contact Email <span class="text-[#ff5555]">*</span></label>
+                        <input type="email" name="email" required placeholder="you@email.com" class="mc-input text-2xl">
+                    </div>
+                </div>
+
+                <!-- Bug Title -->
+                <div>
+                    <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Brief Title of the Bug <span class="text-[#ff5555]">*</span></label>
+                    <input type="text" name="Bug_Title" required placeholder="e.g. Game crashes when crafting dirt" class="mc-input text-2xl">
+                </div>
+
+                <!-- Details Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Priority / Severity</label>
+                        <select name="Severity" class="mc-input text-2xl cursor-pointer">
+                            <option value="Low">Low - Visual bug, typo</option>
+                            <option value="Medium" selected>Medium - Feature broken</option>
+                            <option value="High">High - Game crashing</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Mod / Game Version</label>
+                        <input type="text" name="Game_Version" placeholder="e.g. Forge 1.20.4" class="mc-input text-2xl">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Detailed Description <span class="text-[#ff5555]">*</span></label>
+                    <textarea name="Description" required rows="4" placeholder="1. What did you do?&#10;2. What happened?&#10;3. What should have happened?" class="mc-input text-2xl resize-y"></textarea>
+                </div>
+
+                <!-- File Upload (Screenshot) -->
+                <div>
+                    <label class="block text-2xl text-gray-200 mc-text-shadow-dark mb-1">Screenshot <span class="text-gray-500">(Optional)</span></label>
+                    <label class="mc-slot w-full h-24 flex flex-col items-center justify-center text-center p-2 transition-colors">
+                        <span class="text-[#ffff55] mc-text-shadow text-2xl hover:underline">Click to upload image</span>
+                        <span class="text-gray-300 mc-text-shadow-dark text-xl">PNG or JPG</span>
+                        <input type="file" name="attachment" accept="image/*" class="hidden" id="fileInput" onchange="updateFileName(this)" />
+                    </label>
+                    <p id="fileName" class="text-xl text-[#55ff55] mc-text-shadow-dark hidden mt-2 text-center"></p>
+                </div>
+
+                <!-- Error Box (Hidden) -->
+                <div id="errorBox" class="hidden mc-error px-4 py-3 text-xl mc-text-shadow-dark text-center">
+                    <span id="errorText">Error sending report. Please try again.</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="mc-button py-3 mt-4">
+                    <span id="btnText" class="text-3xl">Submit Bug Report</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Update file name text when a file is selected
+        function updateFileName(input) {
+            const fileNameDisplay = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileNameDisplay.textContent = '> Selected: ' + input.files[0].name;
+                fileNameDisplay.classList.remove('hidden');
+            } else {
+                fileNameDisplay.classList.add('hidden');
+            }
+        }
+
+        // Reset form functionality
+        function resetForm() {
+            document.getElementById('bugForm').reset();
+            document.getElementById('fileName').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+            document.getElementById('formContainer').classList.remove('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+
+        // Intercept Form Submission for AJAX
+        document.getElementById('bugForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            
+            const form = e.target;
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const errorBox = document.getElementById('errorBox');
+            
+            // Set loading state
+            btn.disabled = true;
+            btnText.innerText = 'Sending...';
+            errorBox.classList.add('hidden');
+
+            const formData = new FormData(form);
+
+            fetch('https://formsubmit.co/ajax/belmominecraft@gmail.com', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('formContainer').classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                } else {
+                    throw new Error('FormSubmit rejected the request.');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                errorBox.classList.remove('hidden');
+                document.getElementById('errorText').innerText = "CONNECTION FAILED. TRY AGAIN.";
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btnText.innerText = 'Submit Bug Report';
+            });
+        });
+    </script>
+</body>
+</html>
